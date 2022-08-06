@@ -11,13 +11,7 @@ pub opaque type Trace {
 }
 
 pub fn new(from: Coordinate, trajectory: Coordinate) -> Trace {
-    Trace(
-      from: from,
-      position: from,
-      trajectory: trajectory,
-      step: 0,
-      path: [],
-    )
+  Trace(from: from, position: from, trajectory: trajectory, step: 0, path: [])
 }
 
 pub fn next(trace: Trace) -> Trace {
