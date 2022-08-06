@@ -1,7 +1,7 @@
 import gleam/list
 import gleam/set
 
-pub opaque type Player(id) {
+pub type Player(id) {
   Player(id: id)
 }
 
