@@ -58,6 +58,8 @@ pub fn move(
   }
 }
 
+// Could build a higher level DSL for managing constraints that
+// takes direction into account.
 pub fn project(
   board: Grid(Piece(set)),
   from: Coordinate,
@@ -81,7 +83,6 @@ pub fn project_pawn(
 ) -> List(Projection(Blocked)) {
   let n = case from {
     Coordinate(_, 1) | Coordinate(_, 2) -> 2
-
     Coordinate(_, _) -> 1
   }
 
@@ -101,25 +102,6 @@ pub fn project_pawn(
     projection.project(from, dir.up, constaints),
     projection.project(from, dir.top_right, capture_constaints),
     projection.project(from, dir.top_left, capture_constaints),
-  ]
-}
-
-pub fn project_rook_test(
-  board: Grid(Piece(set)),
-  from: Coordinate,
-  set: set,
-) -> List(Projection(Blocked)) {
-  let constraints =
-    in_steps(Continuous)
-    |> rule.then(in_bounds(board))
-    |> rule.then(is_blocked_by_friendly(board, set))
-    |> rule.then(capture(board, set))
-
-  [
-    projection.project(from, dir.up, constraints),
-    projection.project(from, dir.right, constraints),
-    projection.project(from, dir.down, constraints),
-    projection.project(from, dir.left, constraints),
   ]
 }
 
