@@ -74,3 +74,14 @@ pub fn in_bounds(
     False -> Error(OutOfBounds)
   }
 }
+
+pub fn coordinates(in grid: Grid(h)) -> List(Coordinate) {
+  map.keys(grid.positions)
+}
+
+pub fn map(
+  in grid: Grid(h),
+  with apply: fn(Coordinate, h) -> i,
+) -> Map(Coordinate, i) {
+  map.map_values(grid.positions, apply)
+}

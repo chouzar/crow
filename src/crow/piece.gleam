@@ -1,6 +1,6 @@
 import gleam/int
 import gleam/list
-import gleam/set
+import gleam/set.{Set}
 import gleam/order.{Eq, Gt, Lt}
 import crow/grid.{Grid, NoContent}
 import crow/coordinate.{Coordinate}
@@ -58,8 +58,15 @@ pub fn move(
   }
 }
 
-// Could build a higher level DSL for managing constraints that
-// takes direction into account.
+// TODO: Could build a higher level DSL for managing constraints that takes direction into account.
+
+pub fn path(projections: List(Projection(Blocked))) -> Set(Coordinate) {
+  projections
+  |> list.map(fn(p) { trace.get_path(p.trace) })
+  |> list.flatten()
+  |> set.from_list()
+}
+
 pub fn project(
   board: Grid(Piece(set)),
   from: Coordinate,

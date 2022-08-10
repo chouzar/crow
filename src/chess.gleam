@@ -1,14 +1,26 @@
+// Session:
+// TODO: Later, there should be a function for a session that is being filled with players.
+// Fill up a game session with players
+// Start a game
+// Track input from players
+// On end game, keep the game visible for a few days
+//   Store a transcript or something on a DB
+
+import gleam/list
+import gleam/set.{Set}
+import gleam/map.{Map}
 import gleam/result
 import crow/coordinate.{Coordinate}
 import crow/player.{Player}
-import crow/piece.{Bishop, King, Knight, Pawn, Piece, Queen, Rook}
+import crow/piece.{Bishop, Blocked, King, Knight, Pawn, Piece, Queen, Rook}
 import crow/grid.{Grid}
+import crow/projection.{Projection}
 
 type Board =
   Grid(Piece(String))
 
 pub type Stage {
-  Start
+  Setup
   Playing
   End
 }
@@ -22,21 +34,42 @@ pub type GameState {
   )
 }
 
-pub fn start() -> GameState {
-  // TODO: Later, there should be a function for a session that is being filled with players.
-  let player_a = "azure"
-  let player_b = "ivory"
-
+pub fn setup(player_a: String, player_b: String) -> GameState {
   GameState(
     players: player.players([Player(player_a), Player(player_b)]),
-    stage: Start,
+    stage: Setup,
     board: setup_board(player_a, player_b),
     turn: 0,
   )
 }
 
 pub fn next(state: GameState) -> GameState {
+  let [Player(current_player), Player(opposing_player)] = state.players
+
   // Calculate projections for all pieces: 
+  let paths: List(#(Coordinate, Piece(String), Set(Coordinate))) =
+    state.board
+    |> grid.map(fn(coordinate: Coordinate, piece: Piece(String)) {
+      let path =
+        state.board
+        |> piece.project(coordinate)
+        |> piece.path()
+
+      #(coordinate, piece, path)
+    })
+    |> map.values()
+
+  let opposing_paths: Set(Coordinate) =
+    paths
+    |> list.filter(fn(piece_path: #(Coordinate, Piece(String), Set(Coordinate))) {
+      let piece = piece_path.1
+      piece.set == opposing_player
+    })
+    |> list.map(fn(piece_path: #(Coordinate, Piece(String), Set(Coordinate))) {
+      piece_path.2
+    })
+    |> list.fold(set.new(), fn(paths, path) { set.intersection(paths, path) })
+
   // * Just a map of coordinates (piece) and its projections.
   //
   // Calculate Check:
@@ -46,6 +79,7 @@ pub fn next(state: GameState) -> GameState {
   //
   // Calculate Mate:
   // * ...
+  // * Be lazy and just eat the king
   //
   // Make move or end game: 
   // * ...
@@ -53,8 +87,12 @@ pub fn next(state: GameState) -> GameState {
   // Next move or End game: 
   // * ...
   //
-
-  GameState(..state, turn: state.turn + 1, stage: Playing)
+  GameState(
+    ..state,
+    players: player.next(state.players),
+    stage: Playing,
+    turn: state.turn + 1,
+  )
 }
 
 fn setup_board(player_a: String, player_b: String) -> Board {
