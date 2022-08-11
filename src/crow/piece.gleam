@@ -59,7 +59,8 @@ pub fn move(
 }
 
 // TODO: Could build a higher level DSL for managing constraints that takes direction into account.
-
+// TODO: Projections should likely just return the final paths.
+// TODO: Rules module might be discarded altogether in favor of Result or by merging it with projections.
 pub fn path(projections: List(Projection(Blocked))) -> Set(Coordinate) {
   projections
   |> list.map(fn(p) { trace.get_path(p.trace) })

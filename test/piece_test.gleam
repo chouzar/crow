@@ -1,3 +1,15 @@
+// Chess board
+//
+// 8  ♜ ♞ ♝	♛	♚	♝	♞	♜
+// 7  ♟ ♟ ♟	♟	♟	♟	♟	♟︎
+// 6 
+// 5 
+// 4 
+// 3 
+// 2	♙	♙	♙	♙	♙	♙	♙	♙
+// 1  ♖	♘	♗	♕	♔	♗	♘	♖
+// 	  1 2 3 4 5 6 7 8 
+//
 
 // 3 ⛿ ⛚ ⛚ ⛚  
 // 2 ⛿ ⛚ ⛚ ⛚  
@@ -32,7 +44,7 @@ pub fn project_rook_test() {
     piece.project_rook(
       grid,
       Coordinate(5, 4),
-      player.new("Azure")
+      Player("Azure")
     )
 
   // Some of this info is redundant for all coordinates, like from
