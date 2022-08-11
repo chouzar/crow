@@ -43,6 +43,21 @@ pub fn setup(player_a: String, player_b: String) -> GameState {
   )
 }
 
+// Board representations:
+//
+// alias Path = Set(Coordinate)
+//
+// Map(Player, Map(Coordinate, Piece))
+//   - An initial representation of the board without derived paths
+//
+// List(#(Player, Coordinate, Piece, Path))
+//   - The whole game state
+//   - Might be a good idea to create a record 
+//   - From this is easy to map/filter/reduce
+//     - Derive occupied positiosn by player Map(Player, Path)
+//     - Derive available moves for a player Map(Player, Coordinate)
+//
+
 pub fn next(state: GameState) -> GameState {
   let [Player(current_player), Player(opposing_player)] = state.players
 
@@ -89,7 +104,7 @@ pub fn next(state: GameState) -> GameState {
   //
   GameState(
     ..state,
-    players: player.next(state.players),
+    players: player.rotate(state.players),
     stage: Playing,
     turn: state.turn + 1,
   )
