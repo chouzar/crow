@@ -1,7 +1,12 @@
+// TODO: Refactor
 import gleam/map.{Map}
 import crow/coordinate.{Coordinate}
 
-pub opaque type Grid(content) {
+// TODO: Have a separate Grid and Board module
+// Board covers grid + limits, while Grid only the positions
+// alternatively consider removing the opaque property
+
+pub type Grid(content) {
   Grid(limits: Limits, positions: Map(Coordinate, content))
 }
 
@@ -56,7 +61,7 @@ pub fn update(
   Ok(grid)
 }
 
-fn delete(in grid: Grid(h), at position: Coordinate) -> Grid(h) {
+pub fn delete(in grid: Grid(h), at position: Coordinate) -> Grid(h) {
   let positions = map.delete(grid.positions, position)
   Grid(..grid, positions: positions)
 }
@@ -75,13 +80,12 @@ pub fn in_bounds(
   }
 }
 
-pub fn coordinates(in grid: Grid(h)) -> List(Coordinate) {
-  map.keys(grid.positions)
+pub fn map(grid: Grid(h), apply: fn(Coordinate, h) -> h) -> Grid(h) {
+  let positions = map.map_values(grid.positions, apply)
+  Grid(..grid, positions: positions)
 }
 
-pub fn map(
-  in grid: Grid(h),
-  with apply: fn(Coordinate, h) -> i,
-) -> Map(Coordinate, i) {
-  map.map_values(grid.positions, apply)
+pub fn filter(grid: Grid(h), apply: fn(Coordinate, h) -> Bool) -> Grid(h) {
+  let positions = map.filter(grid.positions, apply)
+  Grid(..grid, positions: positions)
 }

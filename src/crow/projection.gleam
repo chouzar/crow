@@ -12,6 +12,9 @@
 // update the trace, continue or stop in the same place.
 
 //import eval.{Eval}
+
+// TODO: Refactor
+
 import crow/coordinate.{Coordinate}
 import crow/rule.{Rule}
 import crow/trace.{Trace}

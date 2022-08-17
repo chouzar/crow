@@ -1,3 +1,5 @@
+// TODO: Refactor
+
 pub opaque type Rule(t, error) {
   Rule(apply: fn(t) -> Result(t, error))
 }
