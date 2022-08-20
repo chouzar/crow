@@ -30,21 +30,19 @@ pub type Blocked {
   Capture
 }
 
-pub fn move(
-  in board: Grid(Space),
-  from from: Coordinate,
-  to to: Coordinate,
-) -> Grid(Space) {
-  let projections = project(board, from)
+pub fn project(board: Grid(Space), from: Coordinate) -> Set(Coordinate) {
+  assert Ok(space) = grid.retrieve(in: board, at: from)
 
-  case set.contains(projections, to) {
-    True -> {
-      assert Ok(board) = grid.update(board, from, to)
-      board
-    }
-
-    False -> board
+  let projections = case space.piece {
+    Pawn -> project_pawn(board, from, space)
+    Rook -> project_rook(board, from, space)
+    Bishop -> project_bishop(board, from, space)
+    Knight -> project_knight(board, from, space)
+    Queen -> project_queen(board, from, space)
+    King -> project_king(board, from, space)
   }
+
+  path(projections)
 }
 
 fn path(projections: List(Projection(Blocked))) -> Set(Coordinate) {
@@ -54,30 +52,17 @@ fn path(projections: List(Projection(Blocked))) -> Set(Coordinate) {
   |> set.from_list()
 }
 
-pub fn project(board: Grid(Space), from: Coordinate) -> Set(Coordinate) {
-  assert Ok(space) = grid.retrieve(in: board, at: from)
-
-  let projections = case space.player, space.piece {
-    Player(id), Pawn -> project_pawn(board, from, id)
-    Player(id), Rook -> project_rook(board, from, id)
-    Player(id), Bishop -> project_bishop(board, from, id)
-    Player(id), Knight -> project_knight(board, from, id)
-    Player(id), Queen -> project_queen(board, from, id)
-    Player(id), King -> project_king(board, from, id)
-  }
-
-  path(projections)
-}
-
 pub fn project_pawn(
   board: Grid(Space),
   from: Coordinate,
-  set: String,
+  space: Space,
 ) -> List(Projection(Blocked)) {
   let n = case from {
     Coordinate(_, 1) | Coordinate(_, 2) -> 2
     Coordinate(_, _) -> 1
   }
+
+  let Space(player: Player(set), transform: transform, ..) = space
 
   let constaints =
     in_steps(Limited(n))
@@ -92,17 +77,19 @@ pub fn project_pawn(
     |> rule.then(capture(board, set))
 
   [
-    projection.project(from, dir.up, constaints),
-    projection.project(from, dir.top_right, capture_constaints),
-    projection.project(from, dir.top_left, capture_constaints),
+    projection.project(from, transform(dir.up), constaints),
+    projection.project(from, transform(dir.top_right), capture_constaints),
+    projection.project(from, transform(dir.top_left), capture_constaints),
   ]
 }
 
 pub fn project_rook(
   board: Grid(Space),
   from: Coordinate,
-  set: String,
+  space: Space,
 ) -> List(Projection(Blocked)) {
+  let Space(player: Player(set), ..) = space
+
   let constraints =
     in_steps(Continuous)
     |> rule.then(in_bounds(board))
@@ -120,8 +107,10 @@ pub fn project_rook(
 pub fn project_bishop(
   board: Grid(Space),
   from: Coordinate,
-  set: String,
+  space: Space,
 ) -> List(Projection(Blocked)) {
+  let Space(player: Player(set), ..) = space
+
   let constraints =
     in_steps(Continuous)
     |> rule.then(in_bounds(board))
@@ -139,8 +128,10 @@ pub fn project_bishop(
 pub fn project_knight(
   board: Grid(Space),
   from: Coordinate,
-  set: String,
+  space: Space,
 ) -> List(Projection(Blocked)) {
+  let Space(player: Player(set), ..) = space
+
   let constraints =
     in_steps(Limited(1))
     |> rule.then(in_bounds(board))
@@ -162,8 +153,10 @@ pub fn project_knight(
 pub fn project_queen(
   board: Grid(Space),
   from: Coordinate,
-  set: String,
+  space: Space,
 ) -> List(Projection(Blocked)) {
+  let Space(player: Player(set), ..) = space
+
   let constraints =
     in_steps(Continuous)
     |> rule.then(in_bounds(board))
@@ -185,8 +178,10 @@ pub fn project_queen(
 pub fn project_king(
   board: Grid(Space),
   from: Coordinate,
-  set: String,
+  space: Space,
 ) -> List(Projection(Blocked)) {
+  let Space(player: Player(set), ..) = space
+
   let constraints =
     in_steps(Limited(1))
     |> rule.then(in_bounds(board))

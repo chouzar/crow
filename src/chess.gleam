@@ -7,6 +7,10 @@
 // TODO: Work on message fields for errors and warnings.
 // TODO: Booleans are unnecessary for the check field, could be represented by a list of coordinates.
 // TODO: Optimize some of the data-structures to cache information being retrieved over and over.
+// TODO: Chess move decoder/encoder.
+// TODO: Much much detailed an clearer messages on errors.
+// TODO: Check would be an interesting feature for all pieces, not only for king. 
+// Then that info could be stored on Space instead of Gamestate.
 //
 import gleam/list
 import gleam/queue.{Queue}
@@ -32,8 +36,9 @@ pub type GameState {
     players: Queue(Player),
     stage: Stage,
     board: Grid(Space),
+    //transform: Map(Player, Coordinate),
     turn: Int,
-    check: Map(Player, Bool),
+    check: Map(Player, List(Coordinate)),
     mate: Option(Player),
     message: String,
   )
@@ -50,7 +55,7 @@ pub fn setup(p1: String, p2: String) -> GameState {
     stage: Setup,
     board: setup_board(Player(p1), Player(p2)),
     turn: 0,
-    check: map.from_list([#(Player(p1), False), #(Player(p2), False)]),
+    check: map.from_list([#(Player(p1), []), #(Player(p2), [])]),
     mate: None,
     message: "",
   )
@@ -65,15 +70,21 @@ pub fn start(state: GameState) -> GameState {
   )
 }
 
-pub fn next_move(
+pub fn next(
   state: GameState,
-  from: Coordinate,
-  to: Coordinate,
+  from from: Coordinate,
+  to to: Coordinate,
 ) -> GameState {
   case move(state, from, to) {
     Ok(state) ->
-      state
-      |> next()
+      // TODO: Do this in a wrapper fashion
+      GameState(
+        ..state,
+        players: players.rotate(state.players),
+        stage: Playing,
+        board: calculate_paths(state.board),
+        turn: next_turn(state.turn),
+      )
       |> check()
       |> mate()
 
@@ -81,7 +92,7 @@ pub fn next_move(
   }
 }
 
-pub fn move(
+fn move(
   state: GameState,
   from: Coordinate,
   to: Coordinate,
@@ -114,65 +125,59 @@ pub fn move(
   }
 }
 
-pub fn next(state: GameState) -> GameState {
-  GameState(
-    ..state,
-    players: players.rotate(state.players),
-    stage: Playing,
-    board: calculate_paths(state.board),
-    turn: next_turn(state.turn),
-  )
-}
-
 fn setup_board(p1: Player, p2: Player) -> Grid(Space) {
   assert Ok(board) = grid.new(8, 8)
 
-  let set = fn(board, coordinate, player, piece) {
-    grid.set(
-      board,
-      coordinate,
-      Space(player: player, path: set.new(), piece: piece),
-    )
+  let upwards = fn(coor: Coordinate) { coor }
+
+  let downwards = fn(coor: Coordinate) {
+    coordinate.multiply(coor, Coordinate(1, -1))
+  }
+
+  let set = fn(board, x, y, player, piece, transform) {
+    let space =
+      Space(player: player, path: set.new(), piece: piece, transform: transform)
+
+    grid.set(board, Coordinate(x, y), space)
   }
 
   assert Ok(board) =
     Ok(board)
-    |> result.then(set(_, Coordinate(1, 2), p1, Pawn))
-    |> result.then(set(_, Coordinate(2, 2), p1, Pawn))
-    |> result.then(set(_, Coordinate(3, 2), p1, Pawn))
-    |> result.then(set(_, Coordinate(4, 2), p1, Pawn))
-    |> result.then(set(_, Coordinate(5, 2), p1, Pawn))
-    |> result.then(set(_, Coordinate(6, 2), p1, Pawn))
-    |> result.then(set(_, Coordinate(7, 2), p1, Pawn))
-    |> result.then(set(_, Coordinate(8, 2), p1, Pawn))
-    |> result.then(set(_, Coordinate(1, 1), p1, Rook))
-    |> result.then(set(_, Coordinate(2, 1), p1, Bishop))
-    |> result.then(set(_, Coordinate(3, 1), p1, Knight))
-    |> result.then(set(_, Coordinate(4, 1), p1, King))
-    |> result.then(set(_, Coordinate(5, 1), p1, Queen))
-    |> result.then(set(_, Coordinate(6, 1), p1, Knight))
-    |> result.then(set(_, Coordinate(7, 1), p1, Bishop))
-    |> result.then(set(_, Coordinate(8, 1), p1, Rook))
+    |> result.then(set(_, 1, 2, p1, Pawn, upwards))
+    |> result.then(set(_, 2, 2, p1, Pawn, upwards))
+    |> result.then(set(_, 3, 2, p1, Pawn, upwards))
+    |> result.then(set(_, 4, 2, p1, Pawn, upwards))
+    |> result.then(set(_, 5, 2, p1, Pawn, upwards))
+    |> result.then(set(_, 6, 2, p1, Pawn, upwards))
+    |> result.then(set(_, 7, 2, p1, Pawn, upwards))
+    |> result.then(set(_, 8, 2, p1, Pawn, upwards))
+    |> result.then(set(_, 1, 1, p1, Rook, upwards))
+    |> result.then(set(_, 2, 1, p1, Bishop, upwards))
+    |> result.then(set(_, 3, 1, p1, Knight, upwards))
+    |> result.then(set(_, 4, 1, p1, King, upwards))
+    |> result.then(set(_, 5, 1, p1, Queen, upwards))
+    |> result.then(set(_, 6, 1, p1, Knight, upwards))
+    |> result.then(set(_, 7, 1, p1, Bishop, upwards))
+    |> result.then(set(_, 8, 1, p1, Rook, upwards))
 
   assert Ok(board) =
     Ok(board)
-    |> result.then(set(_, Coordinate(1, 7), p2, Pawn))
-    |> result.then(set(_, Coordinate(2, 7), p2, Pawn))
-    |> result.then(set(_, Coordinate(3, 7), p2, Pawn))
-    |> result.then(set(_, Coordinate(4, 7), p2, Pawn))
-    |> result.then(set(_, Coordinate(5, 7), p2, Pawn))
-    |> result.then(set(_, Coordinate(6, 7), p2, Pawn))
-    |> result.then(set(_, Coordinate(7, 7), p2, Pawn))
-    |> result.then(set(_, Coordinate(8, 7), p2, Pawn))
-    |> result.then(set(_, Coordinate(1, 8), p2, Rook))
-    |> result.then(set(_, Coordinate(2, 8), p2, Bishop))
-    |> result.then(set(_, Coordinate(3, 8), p2, Knight))
-    |> result.then(set(_, Coordinate(4, 8), p2, King))
-    |> result.then(set(_, Coordinate(5, 8), p2, Queen))
-    |> result.then(set(_, Coordinate(6, 8), p2, Knight))
-    |> result.then(set(_, Coordinate(7, 8), p2, Bishop))
-    |> result.then(set(_, Coordinate(8, 8), p2, Rook))
-
+    |> result.then(set(_, 1, 7, p2, Pawn, downwards))
+    |> result.then(set(_, 2, 7, p2, Pawn, downwards))
+    |> result.then(set(_, 3, 7, p2, Pawn, downwards))
+    |> result.then(set(_, 4, 7, p2, Pawn, downwards))
+    |> result.then(set(_, 5, 7, p2, Pawn, downwards))
+    |> result.then(set(_, 6, 7, p2, Pawn, downwards))
+    |> result.then(set(_, 7, 7, p2, Pawn, downwards))
+    |> result.then(set(_, 8, 7, p2, Pawn, downwards))
+    |> result.then(set(_, 1, 8, p2, Rook, downwards))
+    |> result.then(set(_, 2, 8, p2, Bishop, downwards))
+    |> result.then(set(_, 3, 8, p2, Knight, downwards))
+    |> result.then(set(_, 4, 8, p2, King, downwards))
+    |> result.then(set(_, 5, 8, p2, Queen, downwards))
+    |> result.then(set(_, 6, 8, p2, Knight, downwards))
+    |> result.then(set(_, 7, 8, p2, Bishop, downwards))
+    |> result.then(set(_, 8, 8, p2, Rook, downwards))
   board
 }
 
@@ -212,11 +217,11 @@ fn check(state: GameState) -> GameState {
     |> map.values()
     |> list.fold(set.new(), set.union)
 
-  case set.intersection(current_player_kings, opposing_player_paths)
-  |> set.size() {
-    0 -> state
-    _ -> GameState(..state, check: map.insert(state.check, current, True))
-  }
+  let checks =
+    set.intersection(current_player_kings, opposing_player_paths)
+    |> set.to_list()
+
+  GameState(..state, check: map.insert(state.check, current, checks))
 }
 
 fn mate(state: GameState) -> GameState {

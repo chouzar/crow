@@ -1,4 +1,3 @@
-
 // PRESENTATION - Gleam is expressive
 //
 // Gleam is fairly simple and in some ways syntax is less expressive than what
