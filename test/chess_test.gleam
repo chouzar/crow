@@ -40,7 +40,7 @@ pub fn play_test() {
   chess.setup("Bone", "Rock")
   |> chess.start()
   |> next("Bone", Pawn, at: #(4, 2), to: #(4, 4))
-  |> next("Rock", Pawn, at: #(4, 7), to: #(4, 5))
+  //|> next("Rock", Pawn, at: #(4, 7), to: #(4, 5))
   //|> next("Bone", Pawn, at: #(3, 2), to: #(3, 4))
   //|> next("Rock", Pawn, at: #(3, 7), to: #(3, 6))
 }

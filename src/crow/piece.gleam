@@ -1,5 +1,3 @@
-// TODO: Refactor
-
 pub type Piece {
   Pawn
   Rook

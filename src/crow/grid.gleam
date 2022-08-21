@@ -1,4 +1,5 @@
 // TODO: Refactor
+import gleam/list.{List}
 import gleam/map.{Map}
 import crow/coordinate.{Coordinate}
 
@@ -29,6 +30,10 @@ pub fn new(x: Int, y: Int) -> Result(Grid(h), Error) {
 
     _, _ -> Error(NegativeInitialization)
   }
+}
+
+pub fn from_list(grid: Grid(h), list: List(#(Coordinate, h))) -> Grid(h) {
+  map.from_list(grid.positions, list)
 }
 
 pub fn set(

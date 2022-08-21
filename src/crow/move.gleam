@@ -52,7 +52,7 @@ fn path(projections: List(Projection(Blocked))) -> Set(Coordinate) {
   |> set.from_list()
 }
 
-pub fn project_pawn(
+fn project_pawn(
   board: Grid(Space),
   from: Coordinate,
   space: Space,
@@ -83,7 +83,7 @@ pub fn project_pawn(
   ]
 }
 
-pub fn project_rook(
+fn project_rook(
   board: Grid(Space),
   from: Coordinate,
   space: Space,
@@ -104,7 +104,7 @@ pub fn project_rook(
   ]
 }
 
-pub fn project_bishop(
+fn project_bishop(
   board: Grid(Space),
   from: Coordinate,
   space: Space,
@@ -125,7 +125,7 @@ pub fn project_bishop(
   ]
 }
 
-pub fn project_knight(
+fn project_knight(
   board: Grid(Space),
   from: Coordinate,
   space: Space,
@@ -150,7 +150,7 @@ pub fn project_knight(
   ]
 }
 
-pub fn project_queen(
+fn project_queen(
   board: Grid(Space),
   from: Coordinate,
   space: Space,
@@ -175,7 +175,7 @@ pub fn project_queen(
   ]
 }
 
-pub fn project_king(
+fn project_king(
   board: Grid(Space),
   from: Coordinate,
   space: Space,

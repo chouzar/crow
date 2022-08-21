@@ -12,7 +12,7 @@
 // TODO: Check would be an interesting feature for all pieces, not only for king. 
 // Then that info could be stored on Space instead of Gamestate.
 //
-import gleam/list
+import gleam/list.{List}
 import gleam/queue.{Queue}
 import gleam/set.{Set}
 import gleam/map.{Map}
@@ -34,8 +34,8 @@ pub type Stage {
 pub type GameState {
   GameState(
     players: Queue(Player),
-    stage: Stage,
     board: Grid(Space),
+    stage: Stage,
     //transform: Map(Player, Coordinate),
     turn: Int,
     check: Map(Player, List(Coordinate)),
@@ -52,8 +52,8 @@ pub type MoveError {
 pub fn setup(p1: String, p2: String) -> GameState {
   GameState(
     players: players.new([Player(p1), Player(p2)]),
-    stage: Setup,
     board: setup_board(Player(p1), Player(p2)),
+    stage: Setup,
     turn: 0,
     check: map.from_list([#(Player(p1), []), #(Player(p2), [])]),
     mate: None,
@@ -62,12 +62,9 @@ pub fn setup(p1: String, p2: String) -> GameState {
 }
 
 pub fn start(state: GameState) -> GameState {
-  GameState(
-    ..state,
-    stage: Playing,
-    board: calculate_paths(state.board),
-    turn: next_turn(state.turn),
-  )
+  GameState(..state, stage: Playing)
+  |> calculate_paths()
+  |> add_turn()
 }
 
 pub fn next(
@@ -78,13 +75,9 @@ pub fn next(
   case move(state, from, to) {
     Ok(state) ->
       // TODO: Do this in a wrapper fashion
-      GameState(
-        ..state,
-        players: players.rotate(state.players),
-        stage: Playing,
-        board: calculate_paths(state.board),
-        turn: next_turn(state.turn),
-      )
+      GameState(..state, players: players.rotate(state.players), stage: Playing)
+      |> calculate_paths()
+      |> add_turn()
       |> check()
       |> mate()
 
@@ -128,19 +121,6 @@ fn move(
 fn setup_board(p1: Player, p2: Player) -> Grid(Space) {
   assert Ok(board) = grid.new(8, 8)
 
-  let upwards = fn(coor: Coordinate) { coor }
-
-  let downwards = fn(coor: Coordinate) {
-    coordinate.multiply(coor, Coordinate(1, -1))
-  }
-
-  let set = fn(board, x, y, player, piece, transform) {
-    let space =
-      Space(player: player, path: set.new(), piece: piece, transform: transform)
-
-    grid.set(board, Coordinate(x, y), space)
-  }
-
   assert Ok(board) =
     Ok(board)
     |> result.then(set(_, 1, 2, p1, Pawn, upwards))
@@ -181,17 +161,46 @@ fn setup_board(p1: Player, p2: Player) -> Grid(Space) {
   board
 }
 
-fn calculate_paths(board: Grid(Space)) -> Grid(Space) {
-  grid.map(
-    board,
-    fn(coordinate, space) {
-      Space(..space, path: move.project(board, coordinate))
-    },
-  )
+pub fn setup(
+  state: GameState,
+  positions: List(#(Coordinate, Space)),
+) -> GameState {
+  GameState(..state, board: grid.from_list(state.board, positions))
 }
 
-fn next_turn(turn: Int) -> Int {
-  turn + 1
+//pub fn setup(board: Grid(Space), List(#(Coordinate, Space))) -> 
+
+pub fn set(board, x, y, player, piece, transform) {
+  let space =
+    Space(player: player, path: set.new(), piece: piece, transform: transform)
+
+  grid.set(board, Coordinate(x, y), space)
+}
+
+pub fn upwards(coordinate: Coordinate) {
+  coordinate
+}
+
+pub fn downwards(coordinate: Coordinate) {
+  coordinate.multiply(coordinate, Coordinate(1, -1))
+}
+
+fn calculate_paths(state: GameState) -> GameState {
+  let GameState(board: board, ..) = state
+
+  let board =
+    grid.map(
+      board,
+      fn(coordinate, space) {
+        Space(..space, path: move.project(board, coordinate))
+      },
+    )
+
+  GameState(..state, board: board)
+}
+
+fn add_turn(state: GameState) -> GameState {
+  GameState(..state, turn: state.turn + 1)
 }
 
 fn check(state: GameState) -> GameState {
