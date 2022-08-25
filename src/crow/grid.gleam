@@ -1,5 +1,4 @@
 // TODO: Refactor
-import gleam/list.{List}
 import gleam/map.{Map}
 import crow/coordinate.{Coordinate}
 
@@ -33,7 +32,8 @@ pub fn new(x: Int, y: Int) -> Result(Grid(h), Error) {
 }
 
 pub fn from_list(grid: Grid(h), list: List(#(Coordinate, h))) -> Grid(h) {
-  map.from_list(grid.positions, list)
+  let positions = map.merge(grid.positions, map.from_list(list))
+  Grid(..grid, positions: positions)
 }
 
 pub fn set(

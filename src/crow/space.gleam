@@ -5,11 +5,16 @@ import crow/coordinate.{Coordinate}
 import crow/players.{Player}
 import crow/piece.{Piece}
 
+pub type Transform {
+  Normal
+  Inverse
+}
+
 pub type Space {
   Space(
     player: Player,
     piece: Piece,
     path: Set(Coordinate),
-    transform: fn(Coordinate) -> Coordinate,
+    transform: Transform,
   )
 }

@@ -3,6 +3,7 @@
 // TODO: Rules module might be discarded altogether in favor of Result or by merging it with projections.
 
 // TODO: Refactor
+import gleam/io
 import gleam/int
 import gleam/list
 import gleam/set.{Set}
@@ -11,7 +12,7 @@ import crow/grid.{Grid, NoContent}
 import crow/coordinate.{Coordinate}
 import crow/piece.{Bishop, King, Knight, Pawn, Queen, Rook}
 import crow/players.{Player}
-import crow/space.{Space}
+import crow/space.{Inverse, Normal, Space}
 import crow/rule.{Rule}
 import crow/trace.{Trace}
 import crow/projection.{Projection, Stop}
@@ -57,12 +58,16 @@ fn project_pawn(
   from: Coordinate,
   space: Space,
 ) -> List(Projection(Blocked)) {
-  let n = case from {
-    Coordinate(_, 1) | Coordinate(_, 2) -> 2
-    Coordinate(_, _) -> 1
-  }
-
   let Space(player: Player(set), transform: transform, ..) = space
+
+  // Transform logic is quite harcoded, matix inversion would work better 
+  let n = case transform, from {
+    Normal, Coordinate(_, 1) -> 2
+    Normal, Coordinate(_, 2) -> 2
+    Inverse, Coordinate(_, 8) -> 2
+    Inverse, Coordinate(_, 7) -> 2
+    _, Coordinate(_, _) -> 1
+  }
 
   let constaints =
     in_steps(Limited(n))
@@ -74,7 +79,14 @@ fn project_pawn(
     in_steps(Limited(1))
     |> rule.then(in_bounds(board))
     |> rule.then(is_blocked_by_friendly(board, set))
-    |> rule.then(capture(board, set))
+    |> rule.then(capture_pawn(board, set))
+
+  let transform = case transform {
+    Normal -> fn(coordinate: Coordinate) { coordinate }
+    Inverse -> fn(coordinate: Coordinate) {
+      coordinate.multiply(coordinate, Coordinate(1, -1))
+    }
+  }
 
   [
     projection.project(from, transform(dir.up), constaints),
@@ -248,6 +260,20 @@ fn is_blocked_by_rival(
         projection.stop(RivalPiece)
       Ok(Space(..)) -> projection.continue(current_trace)
       Error(NoContent) -> projection.continue(current_trace)
+    }
+  })
+}
+
+fn capture_pawn(
+  board: Grid(Space),
+  friendly: String,
+) -> Rule(Trace, Stop(Blocked)) {
+  rule.new(fn(current_trace) {
+    case grid.retrieve(board, trace.get_position(current_trace)) {
+      Ok(Space(player: Player(set), ..)) if set != friendly ->
+        projection.next(Capture)
+      Ok(Space(..)) -> projection.stop(FriendlyPiece)
+      Error(NoContent) -> projection.stop(StepLimit)
     }
   })
 }
