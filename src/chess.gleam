@@ -13,6 +13,7 @@
 // TODO: Posibly step rules now need to carry the whole gamestate
 // Then that info could be stored on Space instead of Gamestate.
 //
+import gleam/io
 import gleam/list
 import gleam/queue.{Queue}
 import gleam/set.{Set}
@@ -88,7 +89,7 @@ pub fn next(
       |> check()
       |> mate()
 
-    Error(_) -> GameState(..state, message: "Error")
+    Error(_error) -> GameState(..state, message: "Error")
   }
 }
 

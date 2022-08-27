@@ -1,5 +1,4 @@
 // TODO: Refactor
-
 import crow/coordinate.{Coordinate}
 
 pub opaque type Trace {
