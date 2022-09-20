@@ -4,11 +4,9 @@ version = "0.0.1"
 # Fill out these fields if you intend to generate HTML documentation or publish
 # your project to the Hex package manager.
 licences = ["Apache-2.0"]
-description = "An adaptation of \"For the Crown\" by Jeremy Lennert."
+description = "An adaptation of 'For the Crown' by Jeremy Lennert."
 repository = { type = "github", user = "chouzar", repo = "crow" }
-links = [
-    { title = "Boardgame", href = "https://boardgamegeek.com/boardgame/97512/crown" },
-]
+links = []
 
 [dependencies]
 gleam_stdlib = "~> 0.22"

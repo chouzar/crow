@@ -104,9 +104,6 @@ fn next(state, player, piece, at from, to to) -> GameState {
   let from = to_coordinate(from)
   let to = to_coordinate(to)
 
-  let result = map.get(state.board.positions, from)
-  let what = map.get(state.board.positions, Coordinate(8, 1))
-
   let state = chess.next(state, from, to)
 
   assert Error(Nil) = map.get(state.board.positions, from)
