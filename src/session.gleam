@@ -1,11 +1,11 @@
-import gleam/io
 import gleam/queue.{Queue}
 import gleam/option.{None, Option, Some}
-import gleam/erlang/process
-import gleam/otp/actor
+import gleam/dynamic.{Dynamic}
+import gleam/erlang/process.{Pid, Subject}
+import gleam/otp/actor.{Continue, Next, StartError, Stop}
 import chess.{GameState}
 
-pub type Session {
+type Session {
   Session(name: String, players: Queue(String), game: Option(GameState))
 }
 
@@ -13,48 +13,57 @@ pub type Message {
   Join(String)
   Set(GameState)
   Close
-  GetPlayers(process.Subject(List(String)))
-  GetGame(process.Subject(GameState))
+  GetPlayers(Subject(List(String)))
+  GetGame(Subject(Option(GameState)))
 }
 
-type Server =
-  process.Subject(Message)
-
-pub fn start(name: String) -> Result(Server, actor.StartError) {
+pub fn start(name: String) -> Result(Subject(Message), StartError) {
   actor.start(new(name), handle)
 }
 
-fn handle(message: Message, session: Session) -> actor.Next(Session) {
+pub fn start_link(name: String) -> Result(Pid, Dynamic) {
+  new(name)
+  |> actor.start(handle)
+  |> actor.to_erlang_start_result()
+}
+
+fn handle(message: Message, session: Session) -> Next(Session) {
   case message {
-    Join(name) -> actor.Continue(add(session, name))
-    Set(game) -> actor.Continue(set(session, game))
-    Close -> actor.Stop(process.Normal)
-    GetPlayers(subject) -> {
-      actor.send(subject, queue.to_list(session.players))
-      actor.Continue(session)
+    // Asynchronous Messages
+    Join(name) -> Continue(add(session, name))
+    Set(game) -> Continue(set(session, game))
+    Close -> Stop(process.Normal)
+
+    // Synchronous Messages
+    GetPlayers(caller) -> {
+      actor.send(caller, queue.to_list(session.players))
+      Continue(session)
     }
-    GetGame(subject) -> {
-      assert Some(game) = session.game
-      actor.send(subject, game)
-      actor.Continue(session)
+    GetGame(caller) -> {
+      actor.send(caller, session.game)
+      Continue(session)
     }
   }
 }
 
-pub fn join(server: Server, name: String) -> Nil {
-  actor.send(server, Join(name))
+pub fn join(subject: Subject(Message), name: String) -> Nil {
+  actor.send(subject, Join(name))
 }
 
-pub fn update(server: Server, game: GameState) -> Nil {
-  actor.send(server, Set(game))
+pub fn update(subject: Subject(Message), game: GameState) -> Nil {
+  actor.send(subject, Set(game))
 }
 
-pub fn close(server: Server) -> Nil {
-  actor.send(server, Close)
+pub fn close(subject: Subject(Message)) -> Nil {
+  actor.send(subject, Close)
 }
 
-pub fn players(server: Server) -> List(String) {
-  actor.call(server, fn(subject) { GetPlayers(subject) }, 100)
+pub fn get_players(subject: Subject(Message)) -> List(String) {
+  actor.call(subject, fn(caller) { GetPlayers(caller) }, 100)
+}
+
+pub fn get_game(subject: Subject(Message)) -> Option(GameState) {
+  actor.call(subject, fn(caller) { GetGame(caller) }, 100)
 }
 
 fn new(name: String) -> Session {
@@ -62,7 +71,7 @@ fn new(name: String) -> Session {
 }
 
 fn add(session: Session, player: String) -> Session {
-  let players = queue.push_back(session.players, player)
+  let players = queue.push_front(session.players, player)
   Session(..session, players: players)
 }
 
