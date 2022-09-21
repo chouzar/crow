@@ -1,5 +1,4 @@
 import gleam/map
-import gleam/io
 import crow/coordinate.{Coordinate}
 import crow/players.{Player}
 import crow/piece.{Bishop, King, Knight, Pawn, Queen, Rook}

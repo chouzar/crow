@@ -3,7 +3,6 @@
 // TODO: Rules module might be discarded altogether in favor of Result or by merging it with projections.
 
 // TODO: Refactor
-import gleam/io
 import gleam/int
 import gleam/list
 import gleam/set.{Set}
@@ -48,7 +47,7 @@ pub fn project(board: Grid(Space), from: Coordinate) -> Set(Coordinate) {
 
 fn path(projections: List(Projection(Blocked))) -> Set(Coordinate) {
   projections
-  |> list.map(fn(p) { trace.get_path(p.trace) })
+  |> list.map(fn(p) { trace.path(p.trace) })
   |> list.flatten()
   |> set.from_list()
 }
@@ -214,7 +213,7 @@ fn project_king(
 
 fn in_bounds(board: Grid(Space)) -> Rule(Trace, Stop(Blocked)) {
   rule.new(fn(current_trace) {
-    case grid.in_bounds(board, trace.get_position(current_trace)) {
+    case grid.in_bounds(board, trace.position(current_trace)) {
       Ok(_) -> projection.continue(current_trace)
       Error(_) -> projection.stop(OutOfBounds)
     }
@@ -227,7 +226,7 @@ fn in_steps(move_limit: MoveLimit) -> Rule(Trace, Stop(Blocked)) {
       Continuous -> projection.continue(current_trace)
 
       Limited(n: steps) ->
-        case int.compare(steps, trace.get_step(current_trace)) {
+        case int.compare(steps, trace.step(current_trace)) {
           Gt -> projection.continue(current_trace)
           Eq -> projection.continue(current_trace)
           Lt -> projection.stop(StepLimit)
@@ -241,7 +240,7 @@ fn is_blocked_by_friendly(
   friendly: String,
 ) -> Rule(Trace, Stop(Blocked)) {
   rule.new(fn(current_trace) {
-    case grid.retrieve(board, trace.get_position(current_trace)) {
+    case grid.retrieve(board, trace.position(current_trace)) {
       Ok(Space(player: Player(set), ..)) if set == friendly ->
         projection.stop(FriendlyPiece)
       Ok(Space(..)) -> projection.continue(current_trace)
@@ -255,7 +254,7 @@ fn is_blocked_by_rival(
   friendly: String,
 ) -> Rule(Trace, Stop(Blocked)) {
   rule.new(fn(current_trace) {
-    case grid.retrieve(board, trace.get_position(current_trace)) {
+    case grid.retrieve(board, trace.position(current_trace)) {
       Ok(Space(player: Player(set), ..)) if set != friendly ->
         projection.stop(RivalPiece)
       Ok(Space(..)) -> projection.continue(current_trace)
@@ -269,7 +268,7 @@ fn capture_pawn(
   friendly: String,
 ) -> Rule(Trace, Stop(Blocked)) {
   rule.new(fn(current_trace) {
-    case grid.retrieve(board, trace.get_position(current_trace)) {
+    case grid.retrieve(board, trace.position(current_trace)) {
       Ok(Space(player: Player(set), ..)) if set != friendly ->
         projection.next(Capture)
       Ok(Space(..)) -> projection.stop(FriendlyPiece)
@@ -280,7 +279,7 @@ fn capture_pawn(
 
 fn capture(board: Grid(Space), friendly: String) -> Rule(Trace, Stop(Blocked)) {
   rule.new(fn(current_trace) {
-    case grid.retrieve(board, trace.get_position(current_trace)) {
+    case grid.retrieve(board, trace.position(current_trace)) {
       Ok(Space(player: Player(set), ..)) if set != friendly ->
         projection.next(Capture)
       Ok(Space(..)) -> projection.continue(current_trace)

@@ -1,17 +1,12 @@
-import gleam/io
-import gleam/list
-import gleam/queue.{Queue}
-import gleam/set.{Set}
-import gleam/map.{Map}
+import gleam/set
 import gleam/result
-import gleam/option.{None, Option, Some}
 import crow/coordinate.{Coordinate}
 import crow/players.{Player}
 import crow/piece.{Bishop, King, Knight, Pawn, Queen, Rook}
-import crow/space.{Inverse, Normal, Space}
+import crow/space.{Inverse, Normal}
 import crow/move
-import crow/grid.{Grid, Limits}
-import chess.{End, GameState, Playing, Setup}
+import crow/grid
+import chess
 
 // Example unicode board
 //   _ _ _ _ _ _ _ _

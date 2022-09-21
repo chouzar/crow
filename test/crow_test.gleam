@@ -1,5 +1,3 @@
-import gleeunit
-
-pub fn main() {
-  gleeunit.main()
+pub fn new_test() {
+  assert True = True
 }

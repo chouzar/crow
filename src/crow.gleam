@@ -1,8 +1,6 @@
 import gleam/io
 import gleam/erlang
-import gleam/otp/actor.{Continue}
-import gleam/erlang/process.{Pid}
-import gleam/erlang/atom.{Atom}
+import gleam/otp/actor
 import session
 
 pub fn main() {

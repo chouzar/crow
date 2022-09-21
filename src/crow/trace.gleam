@@ -26,22 +26,14 @@ pub fn next(trace: Trace) -> Trace {
   )
 }
 
-pub fn get_from(trace: Trace) -> Coordinate {
-  trace.from
-}
-
-pub fn get_position(trace: Trace) -> Coordinate {
+pub fn position(trace: Trace) -> Coordinate {
   trace.position
 }
 
-pub fn get_trajectory(trace: Trace) -> Coordinate {
-  trace.from
-}
-
-pub fn get_step(trace: Trace) -> Int {
+pub fn step(trace: Trace) -> Int {
   trace.step
 }
 
-pub fn get_path(trace: Trace) -> List(Coordinate) {
+pub fn path(trace: Trace) -> List(Coordinate) {
   trace.path
 }
