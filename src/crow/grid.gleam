@@ -1,4 +1,14 @@
 // TODO: Refactor
+// Have functions that compose together with the Grid
+// Have easy to use converters to simpler structs
+
+// There can be a difference between carrying positional logic
+// and computing it
+
+// One is only concerned of storing piece coordinates
+// The other is only concerned of computing bounds and
+// movements. 
+
 import gleam/map.{Map}
 import crow/coordinate.{Coordinate}
 

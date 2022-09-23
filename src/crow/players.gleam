@@ -1,4 +1,4 @@
-// TODO: Refactor
+// TODO: This module is just turn sequence functionality for players
 
 import gleam/queue.{Queue}
 

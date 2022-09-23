@@ -1,4 +1,14 @@
 // TODO:
+// An easier way to model projection would be by modelling with a state machine.
+//
+// Where the states are:  
+//   * Continue 
+//   * Stop 
+// 
+// And the Trace struct would be used as some kind of "memory". 
+//
+// NOTE: One way of doing this is by using gleam's "eval" library.
+
 // Another way of doing projection could be by passing in a "state machine" that
 // changes any aspect of a `Trace` with each transition. This might be better 
 // achieved with the eval library
