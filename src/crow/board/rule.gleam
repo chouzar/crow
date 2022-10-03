@@ -1,7 +1,4 @@
-// TODO: 
-// This is just encapsulated function composition, simpler means to do this 
-// could involve using the result stdlib module. 
-
+// TODO: Maybe using the result module would be enough here.
 pub opaque type Rule(t, error) {
   Rule(apply: fn(t) -> Result(t, error))
 }

@@ -1,5 +1,7 @@
 import crow/coordinate.{Coordinate}
 
+// Move related directions
+
 // · No Move
 pub const hold = Coordinate(0, 0)
 

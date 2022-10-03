@@ -1,20 +1,5 @@
-// TODO: Refactor
-// Have functions that compose together with the Grid
-// Have easy to use converters to simpler structs
-
-// There can be a difference between carrying positional logic
-// and computing it
-
-// One is only concerned of storing piece coordinates
-// The other is only concerned of computing bounds and
-// movements. 
-
 import gleam/map.{Map}
 import crow/coordinate.{Coordinate}
-
-// TODO: Have a separate Grid and Board module
-// Board covers grid + limits, while Grid only the positions
-// alternatively consider removing the opaque property
 
 pub type Grid(content) {
   Grid(limits: Limits, positions: Map(Coordinate, content))
@@ -39,11 +24,6 @@ pub fn new(x: Int, y: Int) -> Result(Grid(h), Error) {
 
     _, _ -> Error(NegativeInitialization)
   }
-}
-
-pub fn from_list(grid: Grid(h), list: List(#(Coordinate, h))) -> Grid(h) {
-  let positions = map.merge(grid.positions, map.from_list(list))
-  Grid(..grid, positions: positions)
 }
 
 pub fn set(

@@ -1,5 +1,5 @@
 import crow/coordinate.{Coordinate}
-import crow/grid.{NegativeInitialization, NoContent, OutOfBounds}
+import crow/board/grid.{NegativeInitialization, NoContent, OutOfBounds}
 
 pub fn new_test() {
   assert Ok(_) = grid.new(3, 3)

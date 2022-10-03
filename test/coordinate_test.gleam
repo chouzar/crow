@@ -19,6 +19,16 @@ pub fn add_test() {
     coordinate.add(Coordinate(x: 36, y: 87), Coordinate(x: 12, y: -63))
 }
 
+pub fn substract_test() {
+  assert Coordinate(x: -4, y: 4) =
+    coordinate.substract(Coordinate(x: 3, y: 7), Coordinate(x: 7, y: 3))
+
+  assert Coordinate(x: -10, y: -10) =
+    coordinate.substract(Coordinate(x: -3, y: -7), Coordinate(x: 7, y: 3))
+
+  assert Coordinate(x: 24, y: 150) =
+    coordinate.substract(Coordinate(x: 36, y: 87), Coordinate(x: 12, y: -63))
+}
 
 pub fn multiply_test() {
   assert Coordinate(x: 10, y: 10) =
