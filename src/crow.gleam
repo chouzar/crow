@@ -1,20 +1,3 @@
-
-// Runtime
-// TODO: Later, there should be a function for a session that is being filled with players.
-// TODO: For a GUI system, there should be a way to compose comands by tracking player's input.
-// TODO: Should a transcript of the game be stored? How long?
-//
-// Logic
-// TODO: Work on message fields for errors and warnings.
-// TODO: Booleans are unnecessary for the check field, could be represented by a list of coordinates.
-// TODO: Optimize some of the data-structures to cache information being retrieved over and over.
-// TODO: Chess move decoder/encoder.
-// TODO: Much much detailed an clearer messages on errors.
-// TODO: Check would be an interesting feature for all pieces, not only for king. 
-// TODO: Posibly step rules now need to carry the whole gamestate
-// Then that info could be stored on Space instead of Gamestate.
-//
-
 import crow/coordinate.{Coordinate}
 import crow/player.{Player}
 import crow/piece.{Piece}
