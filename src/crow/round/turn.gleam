@@ -9,3 +9,7 @@ pub fn new() -> Turn {
 pub fn next(t: Turn) -> Turn {
   Turn(t.n + 1)
 }
+
+pub fn get_turn(turn: Turn) -> Int {
+  turn.n
+}

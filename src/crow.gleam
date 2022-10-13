@@ -1,8 +1,9 @@
 import crow/coordinate.{Coordinate}
 import crow/player.{Player}
 import crow/piece.{Piece}
-import crow/round.{Round}
-import crow/board.{Board}
+import crow/players
+import crow/round
+import crow/board
 import gleam/bit_string
 import gleam/option
 import gleam/list
@@ -30,28 +31,23 @@ const upwards = Coordinate(1, 1)
 const downwards = Coordinate(1, -1)
 
 pub type Gamestate {
-  Gamestate(round: Round, board: Board)
+  Gamestate(players: players.Players, round: round.Round, board: board.Board)
 }
 
 pub fn new() -> Gamestate {
-  Gamestate(round: round.new(), board: board.new())
+  Gamestate(players: players.new(), round: round.new(), board: board.new())
 }
 
 pub fn players(state: Gamestate, p1: String, p2: String) -> Gamestate {
   let p1 = Player(p1)
   let p2 = Player(p2)
 
-  let round =
-    state.round
-    |> round.add_player(p1)
-    |> round.add_player(p2)
+  let players =
+    state.players
+    |> players.add(p1, upwards)
+    |> players.add(p2, downwards)
 
-  let board =
-    state.board
-    |> board.set_facing(p1, upwards)
-    |> board.set_facing(p2, downwards)
-
-  Gamestate(round: round, board: board)
+  Gamestate(..state, players: players)
 }
 
 pub fn deploy(
@@ -63,11 +59,42 @@ pub fn deploy(
   let position = parse_position(position)
   let player = parse_player(player)
 
+  let facing =
+    state.players
+    |> players.get_facing(player)
+
   let board =
     state.board
-    |> board.deploy(position, player, piece)
+    |> board.deploy(position, player, facing, piece)
 
   Gamestate(..state, board: board)
+}
+
+pub fn move(
+  state: Gamestate,
+  from_position: String,
+  to_position: String,
+) -> Gamestate {
+  let from = parse_position(from_position)
+  let to = parse_position(to_position)
+
+  let board =
+    state.board
+    |> board.move(from, to)
+
+  Gamestate(..state, board: board)
+}
+
+pub fn next(state: Gamestate) -> Gamestate {
+  let players =
+    state.players
+    |> players.rotate()
+
+  let round =
+    state.round
+    |> round.next()
+
+  Gamestate(..state, players: players, round: round)
 }
 
 pub type Check {
@@ -91,6 +118,21 @@ pub fn get_position(state: Gamestate, position: String) -> Check {
   state.board
   |> board.get(position)
   |> to_move()
+}
+
+pub fn get_turn(state: Gamestate) -> Int {
+  round.get_turn(state.round)
+}
+
+pub fn get_players(state: Gamestate) -> List(String) {
+  state.players
+  |> players.get_players()
+  |> list.map(fn(player) { player.id })
+}
+
+pub fn get_current_player(state: Gamestate) -> String {
+  let Player(id) = players.get_current(state.players)
+  id
 }
 
 fn to_move(check) {

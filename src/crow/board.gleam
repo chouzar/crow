@@ -4,35 +4,33 @@ import crow/piece.{Piece}
 import crow/board/grid.{Grid}
 import crow/board/piece_path
 import crow/board/check.{Check}
-import crow/board/facing.{Facing}
 import gleam/result
 import gleam/map.{Map}
 
 pub opaque type Board {
-  Board(grid: Grid(Check), facing: Facing)
+  Board(grid: Grid(Check))
 }
 
 pub fn new() -> Board {
   assert Ok(grid) = grid.new(8, 8)
-  Board(grid: grid, facing: facing.new())
+  Board(grid: grid)
 }
 
 pub fn deploy(
   board: Board,
   position: Coordinate,
   player: Player,
+  facing: Coordinate,
   piece: Piece,
 ) -> Board {
-  let facing = facing.get(board.facing, player)
-
-  let space = check.new(player, piece, facing)
+  let check = check.new(player, piece, facing)
 
   assert Ok(grid) =
     board.grid
-    |> grid.set(at: position, value: space)
+    |> grid.set(at: position, value: check)
     |> result.map(trace_paths)
 
-  Board(..board, grid: grid)
+  Board(grid: grid)
 }
 
 pub fn move(board: Board, from: Coordinate, to: Coordinate) -> Board {
@@ -41,13 +39,7 @@ pub fn move(board: Board, from: Coordinate, to: Coordinate) -> Board {
     |> grid.update(at: from, to: to)
     |> result.map(trace_paths)
 
-  Board(..board, grid: grid)
-}
-
-pub fn set_facing(board: Board, player: Player, direction: Coordinate) -> Board {
-  let facing = facing.add(board.facing, player, direction)
-
-  Board(..board, facing: facing)
+  Board(grid: grid)
 }
 
 pub fn all(board: Board) -> Map(Coordinate, Check) {
