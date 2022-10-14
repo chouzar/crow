@@ -99,6 +99,7 @@ pub fn next(state: Gamestate) -> Gamestate {
 
 pub type Check {
   Check(
+    can_move: Bool,
     player: Player,
     piece: Piece,
     path: List(Coordinate),
@@ -107,18 +108,26 @@ pub type Check {
 }
 
 pub fn get_positions(state: Gamestate) -> Map(Coordinate, Check) {
+  let current_player =
+    state.players
+    |> players.get_current()
+
   state.board
   |> board.all()
-  |> map.map_values(fn(_, check) { to_move(check) })
+  |> map.map_values(fn(_, check) { to_move(check, current_player) })
 }
 
-pub fn get_position(state: Gamestate, position: String) -> Check {
-  let position = parse_position(position)
-
-  state.board
-  |> board.get(position)
-  |> to_move()
-}
+//pub fn get_position(state: Gamestate, position: String) -> Check {
+//  let position = parse_position(position)
+//
+//  let current_player =
+//    state.players
+//    |> players.get_current()
+//
+//  state.board
+//  |> board.get(position)
+//  |> to_move(current_player)
+//}
 
 pub fn get_turn(state: Gamestate) -> Int {
   round.get_turn(state.round)
@@ -130,16 +139,22 @@ pub fn get_players(state: Gamestate) -> List(String) {
   |> list.map(fn(player) { player.id })
 }
 
+//pub fn get_player(state: Gamestate, at: Int) -> String {
+//  let Player(id) = players.get_player(state.players, at)
+//  id
+//}
+
 pub fn get_current_player(state: Gamestate) -> String {
   let Player(id) = players.get_current(state.players)
   id
 }
 
-fn to_move(check) {
+fn to_move(check, current_player) {
   let player = check.player
 
   let piece = check.piece
 
+  // TODO: This transformation could go in lower layers
   let path =
     check.paths
     |> list.map(fn(path) { path.positions })
@@ -152,7 +167,7 @@ fn to_move(check) {
     |> list.map(fn(path) { path.capture })
     |> option.values()
 
-  Check(player, piece, path, captures)
+  Check(player == current_player, player, piece, path, captures)
 }
 
 fn parse_player(player: String) -> Player {
