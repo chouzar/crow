@@ -117,36 +117,43 @@ pub fn get_positions(state: Gamestate) -> Map(Coordinate, Check) {
   |> map.map_values(fn(_, check) { to_move(check, current_player) })
 }
 
-//pub fn get_position(state: Gamestate, position: String) -> Check {
-//  let position = parse_position(position)
-//
-//  let current_player =
-//    state.players
-//    |> players.get_current()
-//
-//  state.board
-//  |> board.get(position)
-//  |> to_move(current_player)
-//}
+pub fn get_player_positions(
+  state: Gamestate,
+  player: Player,
+) -> Map(Coordinate, Check) {
+  state
+  |> get_positions()
+  |> map.filter(fn(_coor, check) { check.player == player })
+}
+
+pub fn get_position(state: Gamestate, position: String) -> Check {
+  let position = parse_position(position)
+
+  let current_player =
+    state.players
+    |> players.get_current()
+
+  state.board
+  |> board.get(position)
+  |> to_move(current_player)
+}
 
 pub fn get_turn(state: Gamestate) -> Int {
   round.get_turn(state.round)
 }
 
-pub fn get_players(state: Gamestate) -> List(String) {
-  state.players
-  |> players.get_players()
-  |> list.map(fn(player) { player.id })
-}
-
-//pub fn get_player(state: Gamestate, at: Int) -> String {
-//  let Player(id) = players.get_player(state.players, at)
-//  id
+//pub fn get_players(state: Gamestate) -> List(String) {
+//  state.players
+//  |> players.get_players()
+//  |> list.map(fn(player) { player.id })
 //}
 
-pub fn get_current_player(state: Gamestate) -> String {
-  let Player(id) = players.get_current(state.players)
-  id
+pub fn get_player(state: Gamestate, at: Int) -> Player {
+  players.get_player(state.players, at)
+}
+
+pub fn get_current_player(state: Gamestate) -> Player {
+  players.get_current(state.players)
 }
 
 fn to_move(check, current_player) {
