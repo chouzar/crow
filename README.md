@@ -51,6 +51,7 @@ We may add to this type through Generics.
 
 TODO: Recover gamestate file here
 
+```gleam
 pub type MoveError {
   NoPath
   OutOfBounds
@@ -69,3 +70,4 @@ pub fn move(
   try Nil = check_move(from: from, to: to, in: board)
   Ok(update(at: from, to: to, in: board))
 }
+```
